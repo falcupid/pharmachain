@@ -1,0 +1,19 @@
+[project]
+name = "chainsight-backend"
+version = "0.1.0"
+description = "ChainSight API for tracking products, custody events, and telemetry"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "pydantic-settings>=2.4.0",
+    "uvicorn>=0.30.0",
+    "web3>=7.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = false

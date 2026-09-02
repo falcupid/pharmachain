@@ -10,7 +10,7 @@ router = APIRouter(tags=["health"])
 @router.get("/health")
 async def health_check() -> dict:
     return success_response(
-        message="ChainSight backend is healthy.",
+        message="PharmaChain backend is healthy.",
         data={
             "environment": Config.APP_ENV,
             "chain_mode": Config.CHAIN_MODE,

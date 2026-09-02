@@ -1,1 +1,1 @@
-# ChainSight backend package.
+# PharmaChain backend package.

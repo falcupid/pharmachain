@@ -8,10 +8,12 @@ type Props = {
 
 const initialState: CreateProductInput = {
   name: "",
-  price: "",
+  batch_number: "",
+  manufacturer: "",
   description: "",
   required_temperature: "",
-  manufactured_at: "",
+  manufacturing_date: "",
+  expiry_date: "",
 };
 
 export function ProductForm({ onSubmit }: Props) {

@@ -1,5 +1,5 @@
 {
-  "name": "chainsight-frontend",
+  "name": "PharmaChain-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@yudiel/react-qr-scanner": "^2.6.0",
     "axios": "^1.7.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-qr-code": "^2.2.0",
     "react-router-dom": "^7.0.1"
   },
   "devDependencies": {

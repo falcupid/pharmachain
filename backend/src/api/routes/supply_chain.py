@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 
+from src.schemas.auth import UserRecord
 from src.schemas.supply_chain import (
     CreateProductInput,
     CreateStatusInput,
@@ -7,7 +8,16 @@ from src.schemas.supply_chain import (
     CreateWorkerInput,
     NodeRedTelemetryInput,
 )
-from src.services.supply_chain import SupplyChainService, get_supply_chain_service
+from src.services.auth import (
+    require_admin,
+    require_admin_or_company,
+    require_operations_access,
+    require_roles_for_status,
+)
+from src.services.supply_chain import (
+    SupplyChainService,
+    get_supply_chain_service,
+)
 from src.utils.responses import success_response
 
 
@@ -15,7 +25,10 @@ router = APIRouter(tags=["supply-chain"])
 
 
 @router.get("/overview")
-async def get_overview(service: SupplyChainService = Depends(get_supply_chain_service)) -> dict:
+async def get_overview(
+    service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_operations_access),
+) -> dict:
     return success_response(
         message="Overview fetched successfully.",
         data=service.get_overview(),
@@ -23,7 +36,10 @@ async def get_overview(service: SupplyChainService = Depends(get_supply_chain_se
 
 
 @router.get("/integrations")
-async def get_integrations(service: SupplyChainService = Depends(get_supply_chain_service)) -> dict:
+async def get_integrations(
+    service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_admin),
+) -> dict:
     return success_response(
         message="Integration settings fetched successfully.",
         data=service.get_integration_details(),
@@ -31,15 +47,21 @@ async def get_integrations(service: SupplyChainService = Depends(get_supply_chai
 
 
 @router.get("/ingestion/node-red")
-async def get_node_red_flow(service: SupplyChainService = Depends(get_supply_chain_service)) -> dict:
+async def get_node_red_flow(
+    service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_operations_access),
+) -> dict:
     return success_response(
-        message="Node-RED flow details fetched successfully.",
+        message="Integration flow details fetched successfully.",
         data=service.get_node_red_flow(),
     )
 
 
 @router.get("/workers")
-async def list_workers(service: SupplyChainService = Depends(get_supply_chain_service)) -> dict:
+async def list_workers(
+    service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_operations_access),
+) -> dict:
     return success_response(
         message="Workers fetched successfully.",
         data=service.list_workers(),
@@ -50,6 +72,7 @@ async def list_workers(service: SupplyChainService = Depends(get_supply_chain_se
 async def create_worker(
     payload: CreateWorkerInput,
     service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_admin),
 ) -> dict:
     return success_response(
         message="Worker created successfully.",
@@ -58,7 +81,10 @@ async def create_worker(
 
 
 @router.get("/products")
-async def list_products(service: SupplyChainService = Depends(get_supply_chain_service)) -> dict:
+async def list_products(
+    service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_operations_access),
+) -> dict:
     return success_response(
         message="Products fetched successfully.",
         data=service.list_products(),
@@ -69,6 +95,7 @@ async def list_products(service: SupplyChainService = Depends(get_supply_chain_s
 async def create_product(
     payload: CreateProductInput,
     service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_admin_or_company),
 ) -> dict:
     return success_response(
         message="Product created successfully.",
@@ -80,6 +107,7 @@ async def create_product(
 async def list_product_status(
     product_id: int,
     service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_operations_access),
 ) -> dict:
     return success_response(
         message="Status timeline fetched successfully.",
@@ -92,6 +120,7 @@ async def create_product_status(
     product_id: int,
     payload: CreateStatusInput,
     service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_roles_for_status),
 ) -> dict:
     return success_response(
         message="Status event created successfully.",
@@ -103,6 +132,7 @@ async def create_product_status(
 async def list_product_telemetry(
     product_id: int,
     service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_operations_access),
 ) -> dict:
     return success_response(
         message="Telemetry fetched successfully.",
@@ -115,6 +145,7 @@ async def create_product_telemetry(
     product_id: int,
     payload: CreateTelemetryInput,
     service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_roles_for_status),
 ) -> dict:
     return success_response(
         message="Telemetry recorded successfully.",
@@ -126,6 +157,7 @@ async def create_product_telemetry(
 async def ingest_node_red_telemetry(
     payload: NodeRedTelemetryInput,
     service: SupplyChainService = Depends(get_supply_chain_service),
+    current_user: UserRecord = Depends(require_roles_for_status),
 ) -> dict:
     return success_response(
         message="Node-RED telemetry accepted successfully.",

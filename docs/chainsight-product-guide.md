@@ -1,12 +1,12 @@
-# ChainSight Product Guide
+# PharmaChain Product Guide
 
 ## 1. Product overview
 
-ChainSight is a supply-chain visibility product built for teams that need one clean place to manage tracked goods, handling checkpoints, and environmental telemetry.
+PharmaChain is a supply-chain visibility product built for teams that need one clean place to manage tracked goods, handling checkpoints, and environmental telemetry.
 
-The product is meant for operational environments where location updates alone are not enough. A shipment may also need condition evidence, handler accountability, and an optional verification layer for sensitive records. ChainSight combines those concerns into one workflow instead of splitting them across spreadsheets, chat updates, IoT dashboards, and blockchain tooling.
+The product is meant for operational environments where location updates alone are not enough. A shipment may also need condition evidence, handler accountability, and an optional verification layer for sensitive records. PharmaChain combines those concerns into one workflow instead of splitting them across spreadsheets, chat updates, IoT dashboards, and blockchain tooling.
 
-At a high level, ChainSight does four things well:
+At a high level, PharmaChain does four things well:
 
 - registers products that need to be tracked
 - records who handled them and where events happened
@@ -15,7 +15,7 @@ At a high level, ChainSight does four things well:
 
 ## 2. What the product does
 
-ChainSight allows an operations team to:
+PharmaChain allows an operations team to:
 
 - create a product or shipment record
 - define the expected storage or transport temperature range
@@ -35,15 +35,15 @@ This makes the product useful for scenarios like:
 
 ## 3. Product positioning
 
-ChainSight should be understood as an operations product first.
+PharmaChain should be understood as an operations product first.
 
 The blockchain layer is not the homepage story. The primary value is visibility: products, handlers, checkpoints, telemetry, and a single interface for understanding what happened. Blockchain becomes a supporting trust rail when required by the deployment.
 
-The telemetry flow is also explicit by design. Instead of hiding device ingestion behind vague backend logic, ChainSight names the intake path and surfaces it in the product so the operational model is clear:
+The telemetry flow is also explicit by design. Instead of hiding device ingestion behind vague backend logic, PharmaChain names the intake path and surfaces it in the product so the operational model is clear:
 
 - devices or sensors publish into Node-RED
 - Node-RED formats the payload
-- ChainSight accepts the payload through a dedicated ingestion endpoint
+- PharmaChain accepts the payload through a dedicated ingestion endpoint
 - the reading is attached to a product timeline
 
 ## 4. Core technology
@@ -99,7 +99,7 @@ Key backend files:
 
 ### Contract layer
 
-The Solidity contract defines the on-chain storage model used when ChainSight runs in `blockchain` mode.
+The Solidity contract defines the on-chain storage model used when PharmaChain runs in `blockchain` mode.
 
 Contract file:
 
@@ -135,12 +135,12 @@ Use `blockchain` mode when:
 
 ### High-level workflow
 
-1. A team member creates a product record in ChainSight.
+1. A team member creates a product record in PharmaChain.
 2. A supervisor or operator registers workers or handlers.
 3. A checkpoint event is recorded when the product changes location, custody, or delivery state.
 4. Sensors or edge devices publish readings into Node-RED.
-5. Node-RED sends the formatted payload to ChainSight.
-6. ChainSight validates the payload and attaches the telemetry to the correct product.
+5. Node-RED sends the formatted payload to PharmaChain.
+6. PharmaChain validates the payload and attaches the telemetry to the correct product.
 7. The tracking screen shows both status history and telemetry history together.
 8. If blockchain mode is enabled, product and status writes use the configured backend contract gateway.
 
@@ -272,7 +272,7 @@ cmd /c npm run dev
 
 The frontend runs on Vite's default local development port unless you change it.
 
-## 9. How to use ChainSight in practice
+## 9. How to use PharmaChain in practice
 
 ### Basic manual product flow
 
@@ -333,7 +333,7 @@ Her current pain points are:
 
 Use this scenario to test the product end to end.
 
-1. Ada opens ChainSight in `sandbox` mode.
+1. Ada opens PharmaChain in `sandbox` mode.
 2. She creates a product named `Vaccine Batch A14`.
 3. She registers two handlers in Operations.
 4. She records a checkpoint from the origin hub.

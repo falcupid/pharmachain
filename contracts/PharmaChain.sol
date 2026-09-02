@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity >=0.8.0;
+pragma solidity ^0.8.20;
 
-contract Supplychain {
+contract PharmaChain {
     address owner;
 
     constructor() {
@@ -14,11 +14,15 @@ contract Supplychain {
     struct Product {
         uint256 id;
         string name;
-        string price;
+        string batchNumber;
+        string manufacturer;
         string description;
-        string reqtemp;
-        string manufacturing;
+        string requiredTemperature;
+        string manufacturingDate;
+        string expiryDate;
+        address currentOwner;
         uint256 timestamp;
+        bool verified;
     }
 
     struct Status {
@@ -46,6 +50,18 @@ contract Supplychain {
         uint256 pid;
     }
 
+    event ProductRegistered(
+        uint256 productId,
+        string name,
+        address owner
+    );
+
+    event OwnershipTransferred(
+        uint256 productId,
+        address previousOwner,
+        address newOwner
+    );
+
     Product[] public products_list;
     Status[] public productStatus;
     Worker[] public workers_list;
@@ -57,34 +73,52 @@ contract Supplychain {
     mapping(uint256 => Data[]) public data;
 
     function setWorker(string memory name) public payable {
+        require(msg.sender == owner, "Only owner can add workers");
         Worker memory workerInfo = Worker(name, worker_id, block.timestamp);
         workers[worker_id] = workerInfo;
         workers_list.push(workerInfo);
         worker_id++;
     }
 
-    function AddProduct(
+    function addProduct(
         string memory name,
-        string memory price,
+        string memory batchNumber,
+        string memory manufacturer,
         string memory description,
-        string memory reqtemp,
-        string memory manufacturing
+        string memory requiredTemperature,
+        string memory manufacturingDate,
+        string memory expiryDate
     ) public payable {
+
+        require(msg.sender == owner, "Only owner can register products");
+
         Product memory productInfo = Product(
             product_id,
             name,
-            price,
+            batchNumber,
+            manufacturer,
             description,
-            reqtemp,
-            manufacturing,
-            block.timestamp
+            requiredTemperature,
+            manufacturingDate,
+            expiryDate,
+            msg.sender,
+            block.timestamp,
+            true
         );
+
         products[product_id] = productInfo;
         products_list.push(productInfo);
+
+        emit ProductRegistered(
+            product_id,
+            name,
+            msg.sender
+        );
+
         product_id++;
     }
 
-    function AddStatus(
+    function addStatus(
         string memory location,
         string memory temp,
         string memory humidity,
@@ -109,7 +143,7 @@ contract Supplychain {
         productStatus.push(statusInfo);
     }
 
-    function AddData(
+    function addData(
         uint256 temp,
         uint256 humidity,
         uint256 hindex,
@@ -120,7 +154,7 @@ contract Supplychain {
         Data_list.push(dataInfo);
     }
 
-    function getWorkerssList() public view returns (Worker[] memory) {
+    function getWorkersList() public view returns (Worker[] memory) {
         return workers_list;
     }
 
@@ -135,4 +169,44 @@ contract Supplychain {
     function getProducts() public view returns (Product[] memory) {
         return products_list;
     }
+
+    function getProduct(uint256 id) public view returns (Product memory) {
+        return products[id];
+    }
+
+    function verifyProduct(uint256 id) public view returns (bool) {
+        return products[id].verified;
+    }
+
+    function transferOwnership(
+        uint256 productId,
+        address newOwner
+    ) public {
+
+        require(products[productId].verified, "Product not found");
+
+        require(
+            msg.sender == products[productId].currentOwner,
+            "Only current owner can transfer ownership"
+        );
+
+        address previousOwner = products[productId].currentOwner;
+
+        products[productId].currentOwner = newOwner;
+
+        emit OwnershipTransferred(
+            productId,
+            previousOwner,
+            newOwner
+        );
+    }
+
+    function getCurrentOwner(uint256 productId)
+        public
+        view
+        returns(address)
+    {
+        return products[productId].currentOwner;
+    }
+
 }

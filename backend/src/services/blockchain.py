@@ -70,7 +70,7 @@ class BlockchainSupplyChainGateway:
         return int(value)
 
     def list_workers(self) -> list[WorkerRecord]:
-        workers = self.contract.functions.getWorkerssList().call()
+        workers = self.contract.functions.getWorkersList().call()
         return [
             WorkerRecord(
                 name=item[0],
@@ -90,23 +90,29 @@ class BlockchainSupplyChainGateway:
             ProductRecord(
                 id=self._to_int(item[0]),
                 name=item[1],
-                price=item[2],
-                description=item[3],
-                required_temperature=item[4],
-                manufactured_at=item[5],
-                timestamp=self._to_int(item[6]),
+                batch_number=item[2],
+                manufacturer=item[3],
+                description=item[4],
+                required_temperature=item[5],
+                manufacturing_date=item[6],
+                expiry_date=item[7],
+                current_owner=item[8],
+                timestamp=self._to_int(item[9]),
+                verified=item[10],
             )
             for item in products
         ]
 
     def create_product(self, payload: CreateProductInput) -> ProductRecord:
         self._build_and_send(
-            self.contract.functions.AddProduct(
+            self.contract.functions.addProduct(
                 payload.name,
-                payload.price,
+                payload.batch_number,
+                payload.manufacturer,
                 payload.description,
                 payload.required_temperature,
-                payload.manufactured_at,
+                payload.manufacturing_date,
+                payload.expiry_date,
             )
         )
         return self.list_products()[-1]
@@ -130,7 +136,7 @@ class BlockchainSupplyChainGateway:
 
     def create_status(self, product_id: int, payload: CreateStatusInput) -> StatusRecord:
         self._build_and_send(
-            self.contract.functions.AddStatus(
+            self.contract.functions.addStatus(
                 payload.location,
                 payload.temperature,
                 payload.humidity,
@@ -157,7 +163,7 @@ class BlockchainSupplyChainGateway:
 
     def create_telemetry(self, product_id: int, payload: CreateTelemetryInput) -> TelemetryRecord:
         self._build_and_send(
-            self.contract.functions.AddData(
+            self.contract.functions.addData(
                 payload.temperature,
                 payload.humidity,
                 payload.heat_index,

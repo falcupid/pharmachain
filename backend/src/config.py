@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_ENV: str = "development"
-    APP_NAME: str = "ChainSight API"
+    APP_NAME: str = "PharmaChain API"
     API_PREFIX: str = "/api"
     CHAIN_MODE: str = "sandbox"
     ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]

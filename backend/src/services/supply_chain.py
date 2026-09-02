@@ -67,7 +67,7 @@ class SupplyChainService:
             endpoint=f"{Config.API_PREFIX}/ingestion/node-red/telemetry",
             method="POST",
             content_type="application/json",
-            description="Gateway or sensor readings are posted from Node-RED into ChainSight before they are attached to a product timeline.",
+            description="Gateway or sensor readings are posted from Node-RED into PharmaChain before they are attached to a product timeline.",
         )
 
     def list_workers(self) -> list[WorkerRecord]:

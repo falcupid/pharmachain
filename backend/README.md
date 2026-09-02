@@ -1,6 +1,6 @@
-# ChainSight Backend
+# PharmaChain Backend
 
-Simple FastAPI backend for the ChainSight product.
+Simple FastAPI backend for the PharmaChain product.
 
 ## Stack
 
@@ -27,8 +27,8 @@ Copy `.env.example` to `.env`.
 
 ## Node-RED ingestion
 
-ChainSight exposes a named gateway intake for device readings:
+PharmaChain exposes a named gateway intake for device readings:
 
 - `POST /api/ingestion/node-red/telemetry`
 
-Node-RED can send temperature, humidity, and heat-index readings to that endpoint, and ChainSight will attach the result to the product telemetry stream.
+Node-RED can send temperature, humidity, and heat-index readings to that endpoint, and PharmaChain will attach the result to the product telemetry stream.

@@ -1,12 +1,14 @@
 [project]
-name = "chainsight-backend"
+name = "PharmaChain-backend"
 version = "0.1.0"
-description = "ChainSight API for tracking products, custody events, and telemetry"
+description = "PharmaChain API for tracking products, custody events, and telemetry"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115.0",
+    "pwdlib[argon2]>=0.3.1",
     "pydantic-settings>=2.4.0",
+    "pyjwt>=2.13.0",
     "uvicorn>=0.30.0",
     "web3>=7.0.0",
 ]

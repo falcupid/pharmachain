@@ -41,11 +41,15 @@ export type Worker = {
 export type Product = {
   id: number;
   name: string;
-  price: string;
+  batch_number: string;
+  manufacturer: string;
   description: string;
   required_temperature: string;
-  manufactured_at: string;
+  manufacturing_date: string;
+  expiry_date: string;
+  current_owner: string;
   timestamp: number;
+  verified: boolean;
 };
 
 export type StatusEvent = {
@@ -73,10 +77,12 @@ export type CreateWorkerInput = {
 
 export type CreateProductInput = {
   name: string;
-  price: string;
+  batch_number: string;
+  manufacturer: string;
   description: string;
   required_temperature: string;
-  manufactured_at: string;
+  manufacturing_date: string;
+  expiry_date: string;
 };
 
 export type CreateStatusInput = {

@@ -9,8 +9,15 @@ class Settings(BaseSettings):
     APP_NAME: str = "PharmaChain API"
     API_PREFIX: str = "/api"
     CHAIN_MODE: str = "sandbox"
-    ALLOWED_ORIGINS: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    ALLOWED_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
 
+    # Supabase / PostgreSQL
+    DATABASE_URL: str | None = None
+
+    # Polygon / Web3
     WEB3_RPC_URL: str | None = None
     WEB3_PRIVATE_KEY: str | None = None
     WEB3_ACCOUNT_ADDRESS: str | None = None
@@ -26,7 +33,11 @@ class Settings(BaseSettings):
     @classmethod
     def parse_origins(cls, value: Any) -> Any:
         if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
+            return [
+                origin.strip()
+                for origin in value.split(",")
+                if origin.strip()
+            ]
         return value
 
     @property

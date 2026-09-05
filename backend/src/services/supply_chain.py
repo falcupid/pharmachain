@@ -20,6 +20,7 @@ from src.schemas.supply_chain import (
 )
 from src.services.base import SupplyChainGateway
 from src.services.blockchain import BlockchainSupplyChainGateway
+from src.services.database import DatabaseSupplyChainGateway
 from src.services.sandbox import SandboxSupplyChainGateway
 
 
@@ -31,12 +32,18 @@ class SupplyChainService:
         products = self.list_products()
         workers = self.list_workers()
         status_count = sum(len(self.list_status(product.id)) for product in products)
-        telemetry = [reading for product in products for reading in self.list_telemetry(product.id)]
+        telemetry = [
+            reading
+            for product in products
+            for reading in self.list_telemetry(product.id)
+        ]
+
         active_alerts = sum(
             1
             for reading in telemetry
             if reading.temperature > 24 or reading.humidity > 70
         )
+
         return OverviewRecord(
             product_count=len(products),
             worker_count=len(workers),
@@ -48,8 +55,13 @@ class SupplyChainService:
 
     def get_integration_details(self) -> IntegrationRecord:
         explorer_url = None
+
         if Config.CHAIN_EXPLORER_BASE_URL and Config.WEB3_CONTRACT_ADDRESS:
-            explorer_url = f"{Config.CHAIN_EXPLORER_BASE_URL}{Config.WEB3_CONTRACT_ADDRESS}"
+            explorer_url = (
+                f"{Config.CHAIN_EXPLORER_BASE_URL}"
+                f"{Config.WEB3_CONTRACT_ADDRESS}"
+            )
+
         return IntegrationRecord(
             chain_mode=Config.CHAIN_MODE,
             contract_address=Config.WEB3_CONTRACT_ADDRESS,
@@ -57,44 +69,73 @@ class SupplyChainService:
             rpc_url_configured=bool(Config.WEB3_RPC_URL),
             telemetry_flow_name="Node-RED Telemetry Flow",
             telemetry_flow_provider="Node-RED",
-            telemetry_flow_endpoint=f"{Config.API_PREFIX}/ingestion/node-red/telemetry",
+            telemetry_flow_endpoint=(
+                f"{Config.API_PREFIX}/ingestion/node-red/telemetry"
+            ),
         )
 
     def get_node_red_flow(self) -> NodeRedFlowRecord:
         return NodeRedFlowRecord(
             name="Node-RED Telemetry Flow",
             provider="Node-RED",
-            endpoint=f"{Config.API_PREFIX}/ingestion/node-red/telemetry",
+            endpoint=f"{Config.API_PREFIX}/ingestion/node-red",
             method="POST",
             content_type="application/json",
-            description="Gateway or sensor readings are posted from Node-RED into PharmaChain before they are attached to a product timeline.",
+            description=(
+                "Gateway or sensor readings are posted from Node-RED "
+                "into PharmaChain before they are attached to a product "
+                "timeline."
+            ),
         )
 
     def list_workers(self) -> list[WorkerRecord]:
         return self.gateway.list_workers()
 
-    def create_worker(self, payload: CreateWorkerInput) -> WorkerRecord:
+    def create_worker(
+        self,
+        payload: CreateWorkerInput,
+    ) -> WorkerRecord:
         return self.gateway.create_worker(payload)
 
     def list_products(self) -> list[ProductRecord]:
         return self.gateway.list_products()
 
-    def create_product(self, payload: CreateProductInput) -> ProductRecord:
+    def create_product(
+        self,
+        payload: CreateProductInput,
+    ) -> ProductRecord:
         return self.gateway.create_product(payload)
 
-    def list_status(self, product_id: int) -> list[StatusRecord]:
+    def list_status(
+        self,
+        product_id: int,
+    ) -> list[StatusRecord]:
         return self.gateway.list_status(product_id)
 
-    def create_status(self, product_id: int, payload: CreateStatusInput) -> StatusRecord:
+    def create_status(
+        self,
+        product_id: int,
+        payload: CreateStatusInput,
+    ) -> StatusRecord:
         return self.gateway.create_status(product_id, payload)
 
-    def list_telemetry(self, product_id: int) -> list[TelemetryRecord]:
+    def list_telemetry(
+        self,
+        product_id: int,
+    ) -> list[TelemetryRecord]:
         return self.gateway.list_telemetry(product_id)
 
-    def create_telemetry(self, product_id: int, payload: CreateTelemetryInput) -> TelemetryRecord:
+    def create_telemetry(
+        self,
+        product_id: int,
+        payload: CreateTelemetryInput,
+    ) -> TelemetryRecord:
         return self.gateway.create_telemetry(product_id, payload)
 
-    def ingest_node_red_telemetry(self, payload: NodeRedTelemetryInput) -> NodeRedTelemetryReceipt:
+    def ingest_node_red_telemetry(
+        self,
+        payload: NodeRedTelemetryInput,
+    ) -> NodeRedTelemetryReceipt:
         reading = self.gateway.create_telemetry(
             payload.product_id,
             CreateTelemetryInput(
@@ -103,6 +144,7 @@ class SupplyChainService:
                 heat_index=payload.heat_index,
             ),
         )
+
         return NodeRedTelemetryReceipt(
             flow_name=payload.flow_name,
             provider="Node-RED",
@@ -120,8 +162,17 @@ class SupplyChainService:
 @lru_cache
 def get_supply_chain_service() -> SupplyChainService:
     gateway: SupplyChainGateway
+
+    # Use the blockchain gateway when blockchain mode is explicitly enabled.
     if Config.blockchain_enabled:
         gateway = BlockchainSupplyChainGateway()
+
+    # Use Supabase/PostgreSQL when a database URL is configured.
+    elif Config.DATABASE_URL:
+        gateway = DatabaseSupplyChainGateway()
+
+    # Fall back to the in-memory sandbox for local development without a DB.
     else:
         gateway = SandboxSupplyChainGateway()
+
     return SupplyChainService(gateway)

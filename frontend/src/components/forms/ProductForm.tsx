@@ -23,6 +23,7 @@ export function ProductForm({ onSubmit }: Props) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
+
     try {
       await onSubmit(form);
       setForm(initialState);
@@ -40,43 +41,91 @@ export function ProductForm({ onSubmit }: Props) {
 
       <div className="field-grid">
         <label>
-          <span>Name</span>
+          <span>Product name</span>
           <input
             value={form.name}
-            onChange={(event) => setForm({ ...form, name: event.target.value })}
-            placeholder="Vaccine batch A14"
+            onChange={(event) =>
+              setForm({
+                ...form,
+                name: event.target.value,
+              })
+            }
+            placeholder="Temperature-Sensitive Vaccine Kit"
             required
           />
         </label>
 
         <label>
-          <span>Reference</span>
+          <span>Batch number</span>
           <input
-            value={form.price}
-            onChange={(event) => setForm({ ...form, price: event.target.value })}
-            placeholder="$180"
+            value={form.batch_number}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                batch_number: event.target.value,
+              })
+            }
+            placeholder="VAC-2026-001"
             required
           />
         </label>
 
         <label>
-          <span>Temperature range</span>
+          <span>Manufacturer</span>
+          <input
+            value={form.manufacturer}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                manufacturer: event.target.value,
+              })
+            }
+            placeholder="Pharmaceutical Company"
+            required
+          />
+        </label>
+
+        <label>
+          <span>Required temperature</span>
           <input
             value={form.required_temperature}
             onChange={(event) =>
-              setForm({ ...form, required_temperature: event.target.value })
+              setForm({
+                ...form,
+                required_temperature: event.target.value,
+              })
             }
-            placeholder="2 to 8 C"
+            placeholder="2 C to 8 C"
             required
           />
         </label>
 
         <label>
-          <span>Manufactured</span>
+          <span>Manufacturing date</span>
           <input
-            value={form.manufactured_at}
-            onChange={(event) => setForm({ ...form, manufactured_at: event.target.value })}
-            placeholder="2026-05-10"
+            type="date"
+            value={form.manufacturing_date}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                manufacturing_date: event.target.value,
+              })
+            }
+            required
+          />
+        </label>
+
+        <label>
+          <span>Expiry date</span>
+          <input
+            type="date"
+            value={form.expiry_date}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                expiry_date: event.target.value,
+              })
+            }
             required
           />
         </label>
@@ -86,14 +135,23 @@ export function ProductForm({ onSubmit }: Props) {
         <span>Description</span>
         <textarea
           value={form.description}
-          onChange={(event) => setForm({ ...form, description: event.target.value })}
+          onChange={(event) =>
+            setForm({
+              ...form,
+              description: event.target.value,
+            })
+          }
           placeholder="Short note on the shipment, risk profile, or handling requirement."
           rows={4}
           required
         />
       </label>
 
-      <button className="primary-button" type="submit" disabled={submitting}>
+      <button
+        className="primary-button"
+        type="submit"
+        disabled={submitting}
+      >
         {submitting ? "Saving..." : "Save product"}
       </button>
     </form>

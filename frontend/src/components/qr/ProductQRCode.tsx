@@ -1,14 +1,16 @@
 import QRCode from "react-qr-code";
 
 interface ProductQRCodeProps {
-  productId: string;
+  productId: number;
 }
 
 export function ProductQRCode({
   productId,
 }: ProductQRCodeProps) {
+  const baseUrl = window.location.origin;
+
   const trackingUrl =
-    `http://localhost:5173/tracking/${productId}`;
+    `${baseUrl}/tracking/${productId}`;
 
   return (
     <div

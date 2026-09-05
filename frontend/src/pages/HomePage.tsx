@@ -353,7 +353,7 @@ export function HomePage() {
                   </span>
 
                   <span>
-                    {product.manufactured_at}
+                    {product.manufacturing_date}
                   </span>
 
                 </div>
@@ -396,7 +396,7 @@ export function HomePage() {
 
         </div>
 
-        <ProductQRCode productId="P001" />
+        <ProductQRCode productId={1} />
 
       </section>
 

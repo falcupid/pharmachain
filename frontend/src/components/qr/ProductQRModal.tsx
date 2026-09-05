@@ -7,7 +7,12 @@ type Props = {
 };
 
 export function ProductQRModal({ product, onClose }: Props) {
-  if (!product) return null;
+  if (!product) {
+    return null;
+  }
+
+  const selectedProduct = product;
+
   function downloadQRCode() {
     const svg = document.getElementById("product-qr-code");
 
@@ -27,14 +32,14 @@ export function ProductQRModal({ product, onClose }: Props) {
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `${product.name}-QR.svg`;
+    link.download = `${selectedProduct.name}-QR.svg`;
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
-  }  
+  }
 
   function printQRCode() {
     const svg = document.getElementById("product-qr-code");
@@ -60,61 +65,60 @@ export function ProductQRModal({ product, onClose }: Props) {
           <title>PharmaChain Product Label</title>
 
           <style>
-            body{
+            body {
               font-family: Arial, sans-serif;
-              padding:40px;
-              text-align:center;
+              padding: 40px;
+              text-align: center;
             }
 
-            .label{
-              width:420px;
-              margin:auto;
-              border:2px solid #333;
-              border-radius:12px;
-              padding:20px;
+            .label {
+              width: 420px;
+              margin: auto;
+              border: 2px solid #333;
+              border-radius: 12px;
+              padding: 20px;
             }
 
-            h1{
-              color:#2e8b57;
-              margin-bottom:5px;
+            h1 {
+              color: #2e8b57;
+              margin-bottom: 5px;
             }
 
-            .details{
-              text-align:left;
-              margin:20px 0;
-              line-height:1.8;
+            .details {
+              text-align: left;
+              margin: 20px 0;
+              line-height: 1.8;
             }
 
-            svg{
-              width:180px;
-              height:180px;
+            svg {
+              width: 180px;
+              height: 180px;
             }
 
-            .footer{
-              margin-top:15px;
-              color:#666;
-              font-size:14px;
+            .footer {
+              margin-top: 15px;
+              color: #666;
+              font-size: 14px;
             }
           </style>
-
         </head>
 
         <body>
-
           <div class="label">
-
             <h1>PHARMACHAIN</h1>
 
-            <h2>${product.name}</h2>
+            <h2>${selectedProduct.name}</h2>
 
             <div class="details">
-              <strong>Product ID:</strong> ${product.id}<br>
-              <strong>Batch Number:</strong> ${product.batch_number}<br>
-              <strong>Manufacturer:</strong> ${product.manufacturer}<br>
-              <strong>Temperature:</strong> ${product.required_temperature}<br>
-              <strong>Manufacturing Date:</strong> ${product.manufacturing_date}<br>
-              <strong>Expiry Date:</strong> ${product.expiry_date}<br>
-              <strong>Status:</strong> ${product.verified ? "Verified" : "Not Verified"}
+              <strong>Product ID:</strong> ${selectedProduct.id}<br>
+              <strong>Batch Number:</strong> ${selectedProduct.batch_number}<br>
+              <strong>Manufacturer:</strong> ${selectedProduct.manufacturer}<br>
+              <strong>Temperature:</strong> ${selectedProduct.required_temperature}<br>
+              <strong>Manufacturing Date:</strong> ${selectedProduct.manufacturing_date}<br>
+              <strong>Expiry Date:</strong> ${selectedProduct.expiry_date}<br>
+              <strong>Status:</strong> ${
+                selectedProduct.verified ? "Verified" : "Not Verified"
+              }
             </div>
 
             ${qrSvg}
@@ -122,19 +126,16 @@ export function ProductQRModal({ product, onClose }: Props) {
             <div class="footer">
               Scan to verify product authenticity.
             </div>
-
           </div>
-
         </body>
       </html>
     `);
 
     printWindow.document.close();
-
     printWindow.focus();
-
     printWindow.print();
   }
+
   return (
     <div
       style={{
@@ -171,11 +172,7 @@ export function ProductQRModal({ product, onClose }: Props) {
             PharmaChain
           </p>
 
-          <h2
-            style={{
-              margin: "8px 0 0 0",
-            }}
-          >
+          <h2 style={{ margin: "8px 0 0 0" }}>
             Product QR Code
           </h2>
 
@@ -185,7 +182,7 @@ export function ProductQRModal({ product, onClose }: Props) {
               marginTop: "10px",
             }}
           >
-            {product.name}
+            {selectedProduct.name}
           </p>
         </div>
 
@@ -197,28 +194,32 @@ export function ProductQRModal({ product, onClose }: Props) {
           }}
         >
           <div>
-            <strong>Batch Number:</strong> {product.batch_number}
+            <strong>Batch Number:</strong> {selectedProduct.batch_number}
           </div>
 
           <div>
-            <strong>Manufacturer:</strong> {product.manufacturer}
+            <strong>Manufacturer:</strong> {selectedProduct.manufacturer}
           </div>
 
           <div>
-            <strong>Temperature:</strong> {product.required_temperature}
+            <strong>Temperature:</strong>{" "}
+            {selectedProduct.required_temperature}
           </div>
 
           <div>
-            <strong>Manufacturing Date:</strong> {product.manufacturing_date}
+            <strong>Manufacturing Date:</strong>{" "}
+            {selectedProduct.manufacturing_date}
           </div>
 
           <div>
-            <strong>Expiry Date:</strong> {product.expiry_date}
+            <strong>Expiry Date:</strong> {selectedProduct.expiry_date}
           </div>
 
           <div>
             <strong>Verification:</strong>{" "}
-            {product.verified ? "🟢 Verified" : "🔴 Not Verified"}
+            {selectedProduct.verified
+              ? "🟢 Verified"
+              : "🔴 Not Verified"}
           </div>
         </div>
 
@@ -229,7 +230,7 @@ export function ProductQRModal({ product, onClose }: Props) {
             marginBottom: "20px",
           }}
         >
-          <ProductQRCode productId={product.id} />
+          <ProductQRCode productId={selectedProduct.id} />
         </div>
 
         <div

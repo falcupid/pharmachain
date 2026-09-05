@@ -129,32 +129,38 @@ class SupplyChainService:
         self,
         payload: CreateProductInput,
     ) -> ProductRecord:
-        # 1. Always save the operational record to Supabase/database first.
+        # 1. Save the operational product in Supabase/database first.
         product = self.gateway.create_product(payload)
 
-        # 2. If blockchain verification is configured, register the same
-        #    product on Polygon Amoy.
+        # 2. If blockchain verification is enabled, register the
+        #    same product on Polygon Amoy.
         if self.blockchain_gateway is not None:
             try:
                 blockchain_product = (
                     self.blockchain_gateway.create_product(payload)
                 )
 
-                # Return the database product identity, but reflect the
-                # blockchain verification result in the API response.
-                return product.model_copy(
-                    update={
-                        "verified": blockchain_product.verified,
-                        "current_owner": blockchain_product.current_owner,
-                    }
-                )
+                # 3. Persist successful blockchain verification
+                #    back into Supabase/database.
+                if hasattr(
+                    self.gateway,
+                    "mark_product_verified",
+                ):
+                    product = self.gateway.mark_product_verified(
+                        product_id=product.id,
+                        current_owner=blockchain_product.current_owner,
+                    )
+
+                return product
 
             except Exception as exc:
-                # The database write has already succeeded.
-                # Blockchain failure must not destroy the operational record.
+                # The database write already succeeded.
+                # If blockchain verification or the database update
+                # fails, keep the operational product unverified.
                 print(
                     "Blockchain product verification failed:",
                     str(exc),
+                    flush=True,
                 )
 
         return product

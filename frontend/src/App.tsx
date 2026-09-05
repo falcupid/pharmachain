@@ -2,11 +2,10 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AppHeader } from "./components/layout/AppHeader";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
-import { ProductsPage } from "./pages/ProductsPage";
 import { OperationsPage } from "./pages/OperationsPage";
+import { ProductsPage } from "./pages/ProductsPage";
 import { TrackingPage } from "./pages/TrackingPage";
 
 export default function App() {
@@ -19,97 +18,78 @@ export default function App() {
 
       <main className="page-shell">
         <Routes>
-
-          {/* =========================
-              PUBLIC ROUTES
-          ========================= */}
-
-          <Route
-            path="/login"
-            element={<LoginPage />}
-          />
-
-          {/* =========================
-              AUTHENTICATED ROUTES
-          ========================= */}
+          <Route path="/login" element={<LoginPage />} />
 
           <Route element={<ProtectedRoute />}>
-
-            {/* =========================
-                OVERVIEW
-                Everyone can view
-            ========================= */}
-
-            <Route
-              path="/"
-              element={<HomePage />}
-            />
-
-            {/* =========================
-                PRODUCTS
-                Everyone except nobody
-                is blocked at page level.
-                Editing permissions will
-                be handled inside ProductsPage.
-            ========================= */}
-
-            <Route
-              path="/products"
-              element={<ProductsPage />}
-            />
-
-            {/* =========================
-                OPERATIONS
-                Admin + Dispatcher only
-            ========================= */}
-
+            {/* Overview - all roles */}
             <Route
               element={
                 <ProtectedRoute
                   allowedRoles={[
                     "admin",
+                    "pharmaceutical_company",
+                    "dispatcher",
+                    "pharmachain_employee",
+                  ]}
+                />
+              }
+            >
+              <Route path="/" element={<HomePage />} />
+            </Route>
+
+            {/* Products - all roles */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={[
+                    "admin",
+                    "pharmaceutical_company",
+                    "dispatcher",
+                    "pharmachain_employee",
+                  ]}
+                />
+              }
+            >
+              <Route path="/products" element={<ProductsPage />} />
+            </Route>
+
+            {/* Operations - admin, company, dispatcher */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={[
+                    "admin",
+                    "pharmaceutical_company",
                     "dispatcher",
                   ]}
                 />
               }
             >
-              <Route
-                path="/operations"
-                element={<OperationsPage />}
-              />
+              <Route path="/operations" element={<OperationsPage />} />
             </Route>
 
-            {/* =========================
-                TRACKING
-                Everyone can view
-            ========================= */}
-
+            {/* Tracking - all roles */}
             <Route
-              path="/tracking"
-              element={<TrackingPage />}
-            />
-
-            <Route
-              path="/tracking/:productId"
-              element={<TrackingPage />}
-            />
-
+              element={
+                <ProtectedRoute
+                  allowedRoles={[
+                    "admin",
+                    "pharmaceutical_company",
+                    "dispatcher",
+                    "pharmachain_employee",
+                  ]}
+                />
+              }
+            >
+              <Route path="/tracking" element={<TrackingPage />} />
+              <Route
+                path="/tracking/:productId"
+                element={<TrackingPage />}
+              />
+            </Route>
           </Route>
 
-          {/* =========================
-              UNKNOWN ROUTES
-          ========================= */}
-
-          <Route
-            path="*"
-            element={
-              <Navigate
-                to="/"
-                replace
-              />
-            }
-          />
-
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </div>

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from src.config import Config
 
 from datetime import datetime, timedelta, timezone
 
@@ -10,7 +11,6 @@ from pwdlib import PasswordHash
 from src.schemas.auth import LoginInput, UserRecord
 
 
-SECRET_KEY = "pharmachain-development-secret"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -109,7 +109,7 @@ class AuthenticationService:
 
         return jwt.encode(
             payload,
-            SECRET_KEY,
+            Config.SECRET_KEY,
             algorithm=ALGORITHM,
         )
 
@@ -123,7 +123,7 @@ def get_current_user(
     try:
         payload = jwt.decode(
             token,
-            SECRET_KEY,
+            Config.SECRET_KEY,
             algorithms=[ALGORITHM],
         )
 

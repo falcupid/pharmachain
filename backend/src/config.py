@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "PharmaChain API"
     API_PREFIX: str = "/api"
     CHAIN_MODE: str = "sandbox"
+    SECRET_KEY: str = "pharmachain-development-secret"
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",

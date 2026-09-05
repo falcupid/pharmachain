@@ -56,7 +56,7 @@ class BlockchainSupplyChainGateway:
             {
                 "from": self.account,
                 "nonce": nonce,
-                "gasPrice": self.w3.eth.gas_price,
+                "gasPrice": self.w3.to_wei(25, "gwei"),
             }
         )
         if "gas" not in transaction:

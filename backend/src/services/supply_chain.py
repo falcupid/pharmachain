@@ -25,13 +25,27 @@ from src.services.sandbox import SandboxSupplyChainGateway
 
 
 class SupplyChainService:
-    def __init__(self, gateway: SupplyChainGateway) -> None:
+    def __init__(
+        self,
+        gateway: SupplyChainGateway,
+        blockchain_gateway: BlockchainSupplyChainGateway | None = None,
+    ) -> None:
+        # Primary operational storage:
+        # PostgreSQL/Supabase in production, sandbox locally when no DB exists.
         self.gateway = gateway
+
+        # Optional secondary blockchain gateway used for verification.
+        self.blockchain_gateway = blockchain_gateway
 
     def get_overview(self) -> OverviewRecord:
         products = self.list_products()
         workers = self.list_workers()
-        status_count = sum(len(self.list_status(product.id)) for product in products)
+
+        status_count = sum(
+            len(self.list_status(product.id))
+            for product in products
+        )
+
         telemetry = [
             reading
             for product in products
@@ -56,7 +70,10 @@ class SupplyChainService:
     def get_integration_details(self) -> IntegrationRecord:
         explorer_url = None
 
-        if Config.CHAIN_EXPLORER_BASE_URL and Config.WEB3_CONTRACT_ADDRESS:
+        if (
+            Config.CHAIN_EXPLORER_BASE_URL
+            and Config.WEB3_CONTRACT_ADDRESS
+        ):
             explorer_url = (
                 f"{Config.CHAIN_EXPLORER_BASE_URL}"
                 f"{Config.WEB3_CONTRACT_ADDRESS}"
@@ -88,6 +105,10 @@ class SupplyChainService:
             ),
         )
 
+    # ---------------------------------------------------------
+    # WORKERS
+    # ---------------------------------------------------------
+
     def list_workers(self) -> list[WorkerRecord]:
         return self.gateway.list_workers()
 
@@ -97,6 +118,10 @@ class SupplyChainService:
     ) -> WorkerRecord:
         return self.gateway.create_worker(payload)
 
+    # ---------------------------------------------------------
+    # PRODUCTS
+    # ---------------------------------------------------------
+
     def list_products(self) -> list[ProductRecord]:
         return self.gateway.list_products()
 
@@ -104,7 +129,39 @@ class SupplyChainService:
         self,
         payload: CreateProductInput,
     ) -> ProductRecord:
-        return self.gateway.create_product(payload)
+        # 1. Always save the operational record to Supabase/database first.
+        product = self.gateway.create_product(payload)
+
+        # 2. If blockchain verification is configured, register the same
+        #    product on Polygon Amoy.
+        if self.blockchain_gateway is not None:
+            try:
+                blockchain_product = (
+                    self.blockchain_gateway.create_product(payload)
+                )
+
+                # Return the database product identity, but reflect the
+                # blockchain verification result in the API response.
+                return product.model_copy(
+                    update={
+                        "verified": blockchain_product.verified,
+                        "current_owner": blockchain_product.current_owner,
+                    }
+                )
+
+            except Exception as exc:
+                # The database write has already succeeded.
+                # Blockchain failure must not destroy the operational record.
+                print(
+                    "Blockchain product verification failed:",
+                    str(exc),
+                )
+
+        return product
+
+    # ---------------------------------------------------------
+    # STATUS
+    # ---------------------------------------------------------
 
     def list_status(
         self,
@@ -118,6 +175,10 @@ class SupplyChainService:
         payload: CreateStatusInput,
     ) -> StatusRecord:
         return self.gateway.create_status(product_id, payload)
+
+    # ---------------------------------------------------------
+    # TELEMETRY
+    # ---------------------------------------------------------
 
     def list_telemetry(
         self,
@@ -150,7 +211,9 @@ class SupplyChainService:
             provider="Node-RED",
             gateway_id=payload.gateway_id,
             product_id=payload.product_id,
-            endpoint=f"{Config.API_PREFIX}/ingestion/node-red/telemetry",
+            endpoint=(
+                f"{Config.API_PREFIX}/ingestion/node-red/telemetry"
+            ),
             chain_mode=Config.CHAIN_MODE,
             temperature=reading.temperature,
             humidity=reading.humidity,
@@ -161,18 +224,25 @@ class SupplyChainService:
 
 @lru_cache
 def get_supply_chain_service() -> SupplyChainService:
-    gateway: SupplyChainGateway
+    # ---------------------------------------------------------
+    # PRIMARY STORAGE
+    # ---------------------------------------------------------
 
-    # Use the blockchain gateway when blockchain mode is explicitly enabled.
-    if Config.blockchain_enabled:
-        gateway = BlockchainSupplyChainGateway()
-
-    # Use Supabase/PostgreSQL when a database URL is configured.
-    elif Config.DATABASE_URL:
-        gateway = DatabaseSupplyChainGateway()
-
-    # Fall back to the in-memory sandbox for local development without a DB.
+    if Config.DATABASE_URL:
+        gateway: SupplyChainGateway = DatabaseSupplyChainGateway()
     else:
         gateway = SandboxSupplyChainGateway()
 
-    return SupplyChainService(gateway)
+    # ---------------------------------------------------------
+    # OPTIONAL BLOCKCHAIN VERIFICATION
+    # ---------------------------------------------------------
+
+    blockchain_gateway: BlockchainSupplyChainGateway | None = None
+
+    if Config.blockchain_enabled:
+        blockchain_gateway = BlockchainSupplyChainGateway()
+
+    return SupplyChainService(
+        gateway=gateway,
+        blockchain_gateway=blockchain_gateway,
+    )

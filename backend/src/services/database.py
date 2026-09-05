@@ -162,6 +162,57 @@ class DatabaseSupplyChainGateway:
             verified=row[10],
         )
 
+    def mark_product_verified(
+        self,
+        product_id: int,
+        current_owner: str,
+    ) -> ProductRecord:
+        with get_db_connection() as conn:
+            row = conn.execute(
+                """
+                UPDATE products
+                SET
+                    verified = TRUE,
+                    current_owner = %s
+                WHERE id = %s
+                RETURNING
+                    id,
+                    name,
+                    batch_number,
+                    manufacturer,
+                    description,
+                    required_temperature,
+                    manufacturing_date,
+                    expiry_date,
+                    current_owner,
+                    timestamp,
+                    verified
+                """,
+                (
+                    current_owner,
+                    product_id,
+                ),
+            ).fetchone()
+
+        if row is None:
+            raise ValueError(
+                f"Product {product_id} was not found in the database."
+            )
+
+        return ProductRecord(
+            id=row[0],
+            name=row[1],
+            batch_number=row[2],
+            manufacturer=row[3],
+            description=row[4],
+            required_temperature=row[5],
+            manufacturing_date=row[6],
+            expiry_date=row[7],
+            current_owner=row[8],
+            timestamp=row[9],
+            verified=row[10],
+        )
+
     def list_status(
         self,
         product_id: int,
